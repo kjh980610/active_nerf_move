@@ -8,17 +8,15 @@ from pykin.kinematics.transform import Transform
 
 # 체커보드의 차원 정의
 CHECKERBOARD = (7,10) # 체커보드 행과 열당 내부 코너 수
-INTER_CORNER_DISTANCE_MM = 25  # 체커보드 내부 코너 사이의 간격 (25mm)
+INTER_CORNER_DISTANCE_MM = 0.025  # 체커보드 내부 코너 사이의 간격 (25mm)
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 # 각 체커보드 이미지에 대한 3D 점 벡터를 저장할 벡터 생성
 objpoints = []
 # 각 체커보드 이미지에 대한 2D 점 벡터를 저장할 벡터 생성
 imgpoints = [] 
-# 3D 점의 세계 좌표 정의
-# objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-# objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
+# 3D 점의 세계 좌표 정의
 objp = np.zeros((CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
 objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * INTER_CORNER_DISTANCE_MM
 
@@ -68,7 +66,7 @@ for i in range(len(objpoints)) :
     angle = t_util.vector_norm(rvec)
     axis = rvec / angle
     rvec = t_util.get_quaternion_from_axis_angle(axis,angle)
-
+    tvec = tvec
     vec = Transform(pos=np.array([tvec[0][0],tvec[1][0],tvec[2][0]]),rot=np.array([rvec[0][0],rvec[1][0],rvec[2][0],rvec[3][0],]))
     vecs.append(vec)
-    print(str(i+1)+': \t' +str(vec))
+    print(str(i+1)+': ' + str(vec))
