@@ -11,8 +11,6 @@ from pykin import assets
 from pykin.kinematics.transform import Transform
 from pykin.robots.single_arm import SingleArm
 from pykin.utils.mesh_utils import get_object_mesh
-from pykin.utils.transform_utils import get_rpy_from_matrix
-from pykin.utils import plot_utils as p_utils
 
 from pytamp.scene.scene_manager import SceneManager
 from pytamp.planners.rrt_star_planner import RRTStarPlanner
@@ -21,13 +19,11 @@ from collections import OrderedDict
 
 from move_test import go_joint_paths
 
-from numpy import array
-
 import image_saver
 import time
 
 
-def target_rotate() :
+def rotate_capture() :
 
     current_pose = Transform(pos=np.array([0,0,0]), rot=np.array([0.0, 0.0, 0.0]))
     rotate_pose = Transform(pos=np.array([0,0,0]), rot=np.array([0.0, 0.0, np.pi/2]))
@@ -82,14 +78,15 @@ def target_rotate() :
         color=[1.0, 0.0, 0.0],
     )
 
-
-    def update_rrt_path(scene_mngr, goal_pose,joint_path, goal_q = None):        #rrt로 path 생성
+    #rrt path 생성
+    def update_rrt_path(scene_mngr, goal_pose,joint_path, goal_q = None):       
         planner = RRTStarPlanner(delta_distance=0.05, epsilon=0.2, gamma_RRT_star=2, dimension = robot.arm_dof)
         planner.run(scene_mngr=scene_mngr, cur_q=joint_path[-1], goal_pose=goal_pose, max_iter=500, goal_q=goal_q)
         joint_path += planner.get_joint_path(n_step=1)
 
-    def update_cartesian_path(scene_mngr,goal_pose,joint_path):        #cartesian path 생성
-        planner = CartesianPlanner(n_step = 5, dimension = robot.arm_dof)
+    #cartesian path 생성
+    def update_cartesian_path(scene_mngr,goal_pose,joint_path):        
+        planner = CartesianPlanner(n_step = 2, dimension = robot.arm_dof)
         planner.run(scene_mngr=scene_mngr, cur_q=joint_path[-1], goal_pose=goal_pose)
         joint_path += planner.get_joint_path()
          
@@ -98,34 +95,41 @@ def target_rotate() :
     joint_path =[init_qpos]         #[[qpos(7 joint angles)],...]
     joint_pathes = OrderedDict()    #OrderedDict([('task',[joint_path]),... ])
     pathes_num = 0                  #
+    
+    #로봇 초기 eef pose 저장
+    init_pose = scene_mngr.get_robot_eef_pose()                     
 
-    init_pose = scene_mngr.get_robot_eef_pose()                     #로봇 초기 eef pose 저장
-
-    # poses = [get_rpy_from_matrix(init_pose)]
-
-    xi = init_pose[0,3]+0.05
+    #회전 중심 위치 설정
+    xi = init_pose[0,3]+0.1
     yi = init_pose[1,3]
-
-    th = math.radians(75)
     h = init_pose[2,3]
-    r = 0.15
 
-    p = np.pi/2
-    num = 4
+    #카메라(eef) 각도 설정
+    th = math.radians(75)
+    #회전 반경 설정
+    r = 0.17
+
+    #step 횟수 설정
+    num = 8
+
+    #eef pose 저장을 위한 배열 선언 -> eef to camera 변환 행렬 알면 camera pose 바로 얻을 수 있음
     t_poses = [None] * num
 
-    first_pose = Transform(pos=[xi,yi,h], rot = [0.001,np.pi,0])
-    first_pose = first_pose.h_mat
+    #마지막 조인트 꼬임 방지를 위한 go default 체크용 bool
+    go_def = True
 
-    update_cartesian_path(scene_mngr, first_pose, joint_path)
-    joint_pathes.update({"init" : joint_path[pathes_num:]})
-    pathes_num = len(joint_path)+1
-    
-
-    for i in range(1):
-        p = np.pi * (i)/num *2
+    for i in range(num): 
+        dp = np.pi * 2 / num
+        p = dp * i
         t_pose = Transform(pos=[xi-r*math.cos(p),yi-r*math.sin(p),h], rot=[0.001,-th-np.pi/2,p+np.pi])
         t_poses[i] = t_pose.h_mat
+
+        if joint_path[-1][-1] < dp/2-np.pi and go_def:
+            print("go_def")
+            update_rrt_path(scene_mngr, init_pose, joint_path, goal_q = init_qpos)
+            joint_pathes.update({"go_def" : joint_path[pathes_num:]})
+            pathes_num = len(joint_path)+1
+            go_def = False
 
         step="step" + str(i+1)
         print(step)
@@ -140,13 +144,12 @@ def target_rotate() :
 
     i=0
     for task, value in joint_pathes.items():
-        print(task)
-        joint_path = value
+        joint_path = value    
+        print(task + '\tpath length:' +str(len(joint_path)))
         go_joint_paths(joint_path)
-        if task != "back" and task != "init":
+        if 'step' in task:
             image_saver.ImageSaver(t_poses[i],check_board=True)
             i=i+1
-            time.sleep(1)
+            time.sleep(2)
 
-
-target_rotate()
+rotate_capture()
