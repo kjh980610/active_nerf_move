@@ -3,6 +3,7 @@
   <arg name="robot_ip" default="172.16.0.2" />
   <arg name="arm_id" default="panda" />
   <arg name="transmission" default="effort" doc="The type of position control to use (either 'position' or 'effort')" />
+
   <include file="$(find franka_control)/launch/franka_control.launch" pass_all_args="true"/>
 
   <node name="controller_spawner"
@@ -18,7 +19,6 @@
         output="screen" 
         name="rviz" 
         args="-d $(find franka_example_controllers)/launch/robot.rviz -f $(arg arm_id)_link0 --splash-screen $(find franka_visualization)/splash.png"/>
-
 
   <node name="move_to_start"
         pkg="franka_example_controllers"
