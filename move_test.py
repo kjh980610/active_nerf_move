@@ -2,6 +2,7 @@
 
 import sys
 import rospy as ros
+import numpy as np
 
 from actionlib import SimpleActionClient
 from sensor_msgs.msg import JointState
@@ -15,7 +16,8 @@ def go_joint_paths(joint_path):
     for i, joint_pose in enumerate(joint_path):
         if i is l-1:
             end_path = True
-        go_to_joint_state(joint_pose, end_path)
+        t = go_to_joint_state(joint_pose, end_path)
+    return t
 
 def go_to_joint_state(joint_pose,end_path):
     ros.init_node('move_joint')
@@ -96,6 +98,10 @@ def go_to_joint_state(joint_pose,end_path):
 
         else:
             # ros.loginfo('move_to_start: Successfully moved into pose')
-            pass
+
+            topic = ros.resolve_name('franka_state_controller/joint_states')
+            joint_state = ros.wait_for_message(topic, JointState)
+            cur_pose = np.array(joint_state.position)
+            return cur_pose
     else :
         client.send_goal(goal)

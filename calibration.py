@@ -23,7 +23,7 @@ objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * 
 prev_img_shape = None
 
 # 주어진 디렉터리에 저장된 개별 이미지의 경로 추출
-images = glob.glob('**/check_img/*.png')
+images = glob.glob('**/check_img/st5in8/*.png')
 
 for fname in images:
     img = cv2.imread(fname)
@@ -44,29 +44,43 @@ for fname in images:
         # 코너 그리기 및 표시
         img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
     cv2.imshow('img',img)
+    print(fname)
     cv2.waitKey(0)
 cv2.destroyAllWindows()
 h,w = img.shape[:2] # 480, 640
 # 알려진 3D 점(objpoints) 값과 감지된 코너의 해당 픽셀 좌표(imgpoints) 전달, 카메라 캘리브레이션 수행
 
-# 카메라 내부 파라미터 (실제 데이터로 대체)
+# 카메라 내부 파라미터
 camera_matrix = np.array([607.0380859375, 0.0, 313.9091796875, 0.0, 606.7507934570312, 256.9510803222656, 0.0, 0.0, 1.0])
 camera_matrix = camera_matrix.reshape(3,3)
 
-# 왜곡 계수 (실제 데이터로 대체)
+# 왜곡 계수
 dist_coeffs = np.array([0,0,0,0,0])
 
 
 vecs=[]
-
 # 카메라 자세와 위치 추정
 for i in range(len(objpoints)) :
     retval, rvec, tvec = cv2.solvePnP(objpoints[i], imgpoints[i], camera_matrix, dist_coeffs)
-
     angle = t_util.vector_norm(rvec)
     axis = rvec / angle
     rvec = t_util.get_quaternion_from_axis_angle(axis,angle)
-    tvec = tvec
     vec = Transform(pos=np.array([tvec[0][0],tvec[1][0],tvec[2][0]]),rot=np.array([rvec[0][0],rvec[1][0],rvec[2][0],rvec[3][0],]))
     vecs.append(vec)
-    print(str(i+1)+': ' + str(vec))
+    print('pnp'+str(i+1)+'=' + str(vec)+'.h_mat')
+
+ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+
+vecs=[]
+print("\ncalib")
+print(mtx)
+for i in range(len(objpoints)):
+    rvec=rvecs[i]
+    tvec=tvecs[i]
+    angle = t_util.vector_norm(rvec)
+    axis = rvec / angle
+    rvec = t_util.get_quaternion_from_axis_angle(axis,angle)
+    vec = Transform(pos=np.array([tvec[0][0],tvec[1][0],tvec[2][0]]),rot=np.array([rvec[0][0],rvec[1][0],rvec[2][0],rvec[3][0],]))
+    vecs.append(vec)
+    print('pnp'+str(i+1)+'=' + str(vec)+'.h_mat')
+

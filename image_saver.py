@@ -8,16 +8,16 @@ from pykin.kinematics.transform import Transform
 import numpy as np
 
 class ImageSaver:
-    def __init__(self,pose,check_board = False):
+    def __init__(self,pose,file_num,check_board = False):
 
         self.rgb_image = None
         self.depth_image = None
         pose =get_pose_from_homogeneous(pose)
         dir= "active_nerf_move/"
         if check_board:
-            self.file_name = f"check_img/{pose}.png"
+            self.file_name = f"check_img/c{file_num} {pose}.png"
         else:
-            self.file_name =  f"target_img/{pose}.png"
+            self.file_name =  f"target_img/c{file_num} {pose}.png"
 
         self.file_name = dir + self.file_name
 
