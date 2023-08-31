@@ -32,11 +32,13 @@ rviz= Transform(pos=[0.30582, 9.4487e-05, 0.48332],
 py2riv = (np.linalg.inv(pytamp)).dot(rviz)    
 
 
-tcp2cam=Transform(pos=[0.05, 0.0175, -0.0532],
-                  rot=[2.5674e-16, -0.707105, 1.1102e-16, 0.707109]).h_mat
+# tcp2cam=Transform(pos=[0.05, 0.0175, -0.0532],
+#                   rot=[2.5674e-16, -0.707105, 1.1102e-16, 0.707109]).h_mat
+# # 생각했던값 [[0,0,-1],[0,1,0],[1,0,0]]
+# # 실제 적용  [[0,0,-1],[0,-1,0],[-1,0,0]]
 
-# 생각했던값 [[0,0,-1],[0,1,0],[1,0,0]]
-# 실제 적용  [[0,0,-1],[0,-1,0],[-1,0,0]]
+tcp2cam=Transform(pos=[0.05, 0.0325, -0.0534],
+                  rot=[ 2.2369e-06, -0.70711, 0.70711, -2.2369e-06]).h_mat
 
 cam2tcp=np.linalg.inv(tcp2cam)
 
@@ -46,8 +48,8 @@ tr = [[ 0, 0, 1, 0],
       [ 0, 1, 0, 0],
       [ 0, 0, 0, 1]]
 
-tcp2cam=tcp2cam.dot(tr)
-tcp2cam=py2riv.dot(tcp2cam)
+# tcp2cam=tcp2cam.dot(tr)
+# tcp2cam=py2riv.dot(tcp2cam)
 
 
 step1 = Transform(

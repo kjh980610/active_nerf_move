@@ -72,53 +72,58 @@ def rotate_capture() :
     init_pose = scene_mngr.get_robot_eef_pose()                     
 
     #회전 중심 위치 설정
-    xi = init_pose[0,3] + 0.05
+    xi = init_pose[0,3] 
     yi = init_pose[1,3]
     h = init_pose[2,3]
 
-    #카메라(eef) 각도 설정
-    th = math.radians(75)
-    #회전 반경 설정
-    r = 0.15
 
     #step 횟수 설정
-    num = 4
+    num = 5
 
     #eef pose 저장을 위한 배열 선언 -> eef to camera 변환 행렬 알면 camera pose 바로 얻을 수 있음
     t_poses = [None] * num
 
-    #마지막 조인트 꼬임 방지를 위한 go default 체크용 bool
-    go_def = True
 
-    for i in range(3): 
-        dp = np.pi * 2 / num
-        p = dp * i
-        t_pose = Transform(pos=[xi-r*math.cos(p),yi-r*math.sin(p),h], rot=[0.001,-th-np.pi/2,p+np.pi])
-
-        if i==3 and go_def:
-
-            # np.delete(joint_path)
-
-            print("go_def")
-            update_rrt_path(scene_mngr, init_pose, joint_path, goal_q = init_qpos)
-            joint_pathes.update({"go_def" : joint_path[pathes_num:]})
-            pathes_num = len(joint_path)
-            go_def = False
-
+    l=0.2
+    dl=l/(num-1)
+    
+    for i in range(num):
         step="step" + str(i+1)
         print(step)
-        update_rrt_path(scene_mngr, t_pose.h_mat, joint_path)
+
+
+        
+        t_pose = Transform(pos=[xi-l/2+dl*i,yi,h], rot=[np.pi-0.001,0,0]).h_mat
+
+        # tcp2cam = Transform(
+        #     pos=[0.05000000000025001, 0.03249999999999967,-0.0533999209150639],
+        #     rot=[-0.7071067811830093, 2.2368597873468656e-06, -2.2368597872479863e-06, 0.7071067811830091]).h_mat
+
+        # tr = tu.get_h_mat(position=[0.05,0,0])
+        # tr = np.dot(np.dot(tcp2cam,tr),np.linalg.inv(tcp2cam)) 
+
+        # t_pose2 = np.dot(init_pose,tr)
+        # print(init_pose)
+        # print(tu.get_rpy_from_matrix(t_pose2))
+        # print(tu.get_pos_mat_from_homogeneous(t_pose2))
+        # t_pose2 = Transform(pos= tu.get_pos_mat_from_homogeneous(t_pose2),
+        #                     rot=[np.pi-0.001,0,0]).h_mat
+
+        update_rrt_path(scene_mngr, t_pose, joint_path)
 
         joint_pathes.update({step : joint_path[pathes_num:]})
         pathes_num = len(joint_path)
         scene_mngr.set_robot_eef_pose(joint_path[-1])
         t_poses[i] = scene_mngr.get_gripper_tcp_pose()
 
+
+
     # back_init_pose - 초기 위치로 돌아가기
     update_rrt_path(scene_mngr, init_pose, joint_path, goal_q = init_qpos)
     joint_pathes.update({"back" : joint_path[pathes_num:]})
     pathes_num = len(joint_path)
     np.set_printoptions(precision=6, suppress=False)
+    
     i=0
     for task, value in joint_pathes.items():
         joint_paths = value    
@@ -131,7 +136,6 @@ def rotate_capture() :
         #     print(path)
 
         time.sleep(2)
-
         if 'step' in task:
             t_poses[i] = get_pose(i+1)
             image_saver.ImageSaver(t_poses[i],i+1,check_board=True)

@@ -23,7 +23,7 @@ objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * 
 prev_img_shape = None
 
 # 주어진 디렉터리에 저장된 개별 이미지의 경로 추출
-images = glob.glob('**/check_img/st5in8/*.png')
+images = glob.glob('**/check_img/*.png')
 
 for fname in images:
     img = cv2.imread(fname)
