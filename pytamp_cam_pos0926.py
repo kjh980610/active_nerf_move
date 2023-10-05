@@ -93,7 +93,7 @@ def rotate_capture() :
 
 
         
-        t_pose = Transform(pos=[xi,yi,h-0.2], rot=[np.pi-0.001,0,0]).h_mat
+        t_pose = Transform(pos=[xi,yi,h], rot=[np.pi-0.001,0,0]).h_mat
 
 
         update_rrt_path(scene_mngr, t_pose, joint_path)
@@ -116,16 +116,18 @@ def rotate_capture() :
         joint_paths = value    
         print(task + '\tpath length:' +str(len(joint_paths)))
         cur_pose = go_joint_paths(joint_paths)
-        scene_mngr.set_robot_eef_pose(cur_pose)
+        # scene_mngr.set_robot_eef_pose(cur_pose)
         # t_p = scene_mngr.get_gripper_tcp_pose()
         # print(tu.get_pose_from_homogeneous(t_p))
         # for path in joint_paths :
         #     print(path)
 
-        time.sleep(2)
+        # time.sleep(2)
         if 'step' in task:
             t_poses[i] = get_pose(i+1)
             image_saver.ImageSaver(t_poses[i],i+1,check_board=True)
+
+            time.sleep(2)
 
             # print(t_poses[i])
             i=i+1

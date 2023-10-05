@@ -52,6 +52,7 @@ h,w = img.shape[:2] # 480, 640
 
 # 카메라 내부 파라미터
 camera_matrix = np.array([607.0380859375, 0.0, 313.9091796875, 0.0, 606.7507934570312, 256.9510803222656, 0.0, 0.0, 1.0])
+
 camera_matrix = camera_matrix.reshape(3,3)
 
 # 왜곡 계수
@@ -67,7 +68,9 @@ for i in range(len(objpoints)) :
     rvec = t_util.get_quaternion_from_axis_angle(axis,angle)
     vec = Transform(pos=np.array([tvec[0][0],tvec[1][0],tvec[2][0]]),rot=np.array([rvec[0][0],rvec[1][0],rvec[2][0],rvec[3][0],]))
     vecs.append(vec)
-    print('pnp'+str(i+1)+'=' + str(vec)+'.h_mat')
+    vec = vec.pose
+    print('pnp'+str(i+1)+'=' +f'Transform( pos=[{vec[0]}, {vec[1]},{vec[2]}],')
+    print(f' rot=[{vec[3]},{vec[4]}, {vec[5]}, {vec[6]}]).h_mat')
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
@@ -82,5 +85,7 @@ for i in range(len(objpoints)):
     rvec = t_util.get_quaternion_from_axis_angle(axis,angle)
     vec = Transform(pos=np.array([tvec[0][0],tvec[1][0],tvec[2][0]]),rot=np.array([rvec[0][0],rvec[1][0],rvec[2][0],rvec[3][0],]))
     vecs.append(vec)
-    print('pnp'+str(i+1)+'=' + str(vec)+'.h_mat')
+    vec = vec.pose
+    print('pnp'+str(i+1)+'=' +f'Transform( pos=[{vec[0]}, {vec[1]},{vec[2]}],')
+    print(f' rot=[{vec[3]},{vec[4]}, {vec[5]}, {vec[6]}]).h_mat')
 

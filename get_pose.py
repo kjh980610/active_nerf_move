@@ -4,7 +4,6 @@ from pykin.kinematics.transform import Transform
 
 
 def get_pose(num) :
-    # rospy.init_node('tf_listener')
 
     # 프레임 이름 설정
     target_frame = 'panda_link0'
@@ -36,10 +35,10 @@ def get_pose(num) :
     print(f"pos=[{position2[0]}, {position2[1]},{position2[2]}],")
     print(f"rot=[{orientation2[3]}, {orientation2[0]}, {orientation2[1]}, {orientation2[2]}]).h_mat")
 
-    # print('tcp2cam = Transform(')
-    # print(f"pos=[{position3[0]}, {position3[1]},{position3[2]}],")
-    # print(f"rot=[{orientation3[3]}, {orientation3[0]}, {orientation3[1]}, {orientation3[2]}]).h_mat")
-    
+    print('tcp2cam = Transform(')
+    print(f"pos=[{position3[0]}, {position3[1]},{position3[2]}],")
+    print(f"rot=[{orientation3[3]}, {orientation3[0]}, {orientation3[1]}, {orientation3[2]}]).h_mat")
+
     tr = Transform(pos=position2,rot=[orientation2[3],orientation2[0],orientation2[1],orientation2[2]]).h_mat
 
     return tr

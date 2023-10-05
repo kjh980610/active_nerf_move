@@ -13,9 +13,11 @@ class ImageSaver:
         self.rgb_image = None
         self.depth_image = None
         pose =get_pose_from_homogeneous(pose)
+        
         dir= "active_nerf_move/"
         if check_board:
-            self.file_name = f"check_img/c{file_num} {pose}.png"
+            # self.file_name = f"check_img/c{file_num} {pose}.png"
+            self.file_name = f"check_img/c{file_num} = Transform( pos=[{pose[0]}, {pose[1]},{pose[2]}],rot=[{pose[3]}, {pose[4]}, {pose[5]}, {pose[6]}]).h_mat.png"
         else:
             self.file_name =  f"target_img/c{file_num} {pose}.png"
 
@@ -52,5 +54,6 @@ class ImageSaver:
 if __name__ == '__main__':
 
     rospy.init_node('img_saver', anonymous=True)
-    image_saver = ImageSaver(Transform().h_mat)
+    image_saver = ImageSaver(Transform().h_mat,1,check_board=True)
     image_saver.run()
+    exit()
