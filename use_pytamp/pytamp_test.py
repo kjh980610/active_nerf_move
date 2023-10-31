@@ -7,6 +7,7 @@ import math
 import os
 import yaml
 
+
 from pykin import assets
 from pykin.kinematics.transform import Transform
 from pykin.robots.single_arm import SingleArm
@@ -90,7 +91,7 @@ def rotate_capture() :
     #마지막 조인트 꼬임 방지를 위한 go default 체크용 bool
     go_def = True
 
-    for i in range(3): 
+    for i in range(1): 
         dp = np.pi * 2 / num
         p = dp * i
         t_pose = Transform(pos=[xi-r*math.cos(p),yi-r*math.sin(p),h], rot=[0.001,-th-np.pi/2,p+np.pi])
@@ -120,6 +121,8 @@ def rotate_capture() :
     pathes_num = len(joint_path)
     np.set_printoptions(precision=6, suppress=False)
     i=0
+
+    
     for task, value in joint_pathes.items():
         joint_paths = value    
         print(task + '\tpath length:' +str(len(joint_paths)))
@@ -130,11 +133,11 @@ def rotate_capture() :
         # for path in joint_paths :
         #     print(path)
 
-        time.sleep(2)
+        # time.sleep(2)
 
         if 'step' in task:
-            t_poses[i] = get_pose(i+1)
-            image_saver.ImageSaver(t_poses[i],i+1,check_board=True)
+            #t_poses[i] = get_pose(i+1)
+            # image_saver.ImageSaver(t_poses[i],i+1,check_board=True)
 
             # print(t_poses[i])
             i=i+1
