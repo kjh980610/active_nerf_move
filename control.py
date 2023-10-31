@@ -88,6 +88,9 @@ class control(object):
 
         group_names = robot.get_group_names()
 
+        move_group.set_planner_id('RRTstar')
+        move_group.set_planning_time(5)
+
 
         self.box_name = ""
         self.robot = robot
@@ -135,17 +138,17 @@ class control(object):
         current_pose = self.move_group.get_current_pose().pose
         return all_close(pose_goal, current_pose, 0.01)
     
-    def cal_target_pose(self, pos =[0.307,0,0.59], rot = [0,1,0,0]):
+    def cal_target_pose(self, pos =[0.307,0,0.59], rot = [0.,1.,0.,0.]):
         target_pose = geometry_msgs.msg.Pose()
 
-        target_pose.position.x=pos[0]
-        target_pose.position.y=pos[1]
-        target_pose.position.z=pos[2]
+        target_pose.position.x=float(pos[0])
+        target_pose.position.y=float(pos[1])
+        target_pose.position.z=float(pos[2])
 
-        target_pose.orientation.w = rot[0]
-        target_pose.orientation.x = rot[1]
-        target_pose.orientation.y = rot[2]
-        target_pose.orientation.z = rot[3]
+        target_pose.orientation.w = float(rot[0])
+        target_pose.orientation.x = float(rot[1])
+        target_pose.orientation.y = float(rot[2])
+        target_pose.orientation.z = float(rot[3])
 
         return target_pose
 

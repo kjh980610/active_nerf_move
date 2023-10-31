@@ -1,4 +1,3 @@
-#! /usr/bin/env python3
 
 import rospy
 import tf
@@ -9,7 +8,7 @@ def get_pose(num) :
 
     # 프레임 이름 설정
     target_frame = 'panda_link0'
-    source_frame = 'panda_hand_tcp'
+    source_frame = 'panda_hand'
     source_frame2 = 'camera_color_optical_frame'
 
     # TF 정보 수신을 위한 TransformListener 생성

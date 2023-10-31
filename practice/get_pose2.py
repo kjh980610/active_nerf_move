@@ -4,7 +4,7 @@ import tf
 rospy.init_node('tf_listener')
 
 # 프레임 이름 설정
-frames = ['panda_hand', 'camera_link', 'panda_link0']
+frames = ['panda_hand', 'camera_color_frame', 'panda_link0']
 
 # TF 정보 수신을 위한 TransformListener 생성
 tf_listener = tf.TransformListener()
