@@ -4,7 +4,7 @@ import tf
 rospy.init_node('tf_listener')
 
 # 프레임 이름 설정
-frames = ['panda_hand_tcp', 'camera_link', 'panda_link0']
+frames = ['panda_hand', 'camera_link', 'panda_link0']
 
 # TF 정보 수신을 위한 TransformListener 생성
 tf_listener = tf.TransformListener()
@@ -24,7 +24,7 @@ for target_frame in frames:
             try:
                 (position, orientation) = tf_listener.lookupTransform(target_frame, source_frame, time)
                 print(f"Transform from {source_frame} to {target_frame}:")
-                print(f"pos=[{position[0]}, {position[1]},{position[2]}],")
+                print(f"pos=[{position[0]}, {position[1]},{position[2]}],") 
                 print(f"rot=[{orientation[3]},{orientation[0]}, {orientation[1]}, {orientation[2]}]")
                 print()
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):

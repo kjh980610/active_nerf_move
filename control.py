@@ -10,6 +10,9 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 
+import franka_gripper.msg
+import actionlib
+
 try:
     from math import pi, tau, dist, fabs, cos
 except:  # For Python 2 compatibility
@@ -96,20 +99,18 @@ class control(object):
         self.group_names = group_names
 
     
-    def go_to_joint_state(self):
+    def go_to_start(self):
 
         move_group = self.move_group
 
-
         joint_goal = move_group.get_current_joint_values()
-        print(joint_goal)
         joint_goal[0] = 0
-        joint_goal[1] = -tau / 8
+        joint_goal[1] = -0.785398163397
         joint_goal[2] = 0
-        joint_goal[3] = -tau / 4
+        joint_goal[3] = -2.35619449019
         joint_goal[4] = 0
-        joint_goal[5] = tau / 6  # 1/6 of a turn
-        joint_goal[6] = 0
+        joint_goal[5] = 1.57079632679
+        joint_goal[6] = 0.785398163397
 
         move_group.go(joint_goal, wait=True)
 
@@ -133,6 +134,20 @@ class control(object):
 
         current_pose = self.move_group.get_current_pose().pose
         return all_close(pose_goal, current_pose, 0.01)
+    
+    def cal_target_pose(self, pos =[0.307,0,0.59], rot = [0,1,0,0]):
+        target_pose = geometry_msgs.msg.Pose()
+
+        target_pose.position.x=pos[0]
+        target_pose.position.y=pos[1]
+        target_pose.position.z=pos[2]
+
+        target_pose.orientation.w = rot[0]
+        target_pose.orientation.x = rot[1]
+        target_pose.orientation.y = rot[2]
+        target_pose.orientation.z = rot[3]
+
+        return target_pose
 
     def plan_and_execute_cartesian_path(self, pose_goal):
 
@@ -149,22 +164,6 @@ class control(object):
         move_group.execute(plan, wait=True)
 
         return plan, fraction
-
-    def display_trajectory(self, plan):
-        robot = self.robot
-        display_trajectory_publisher = self.display_trajectory_publisher
-
-        display_trajectory = moveit_msgs.msg.DisplayTrajectory()
-        display_trajectory.trajectory_start = robot.get_current_state()
-        display_trajectory.trajectory.append(plan)
-
-        display_trajectory_publisher.publish(display_trajectory)
-
-    def execute_plan(self, plan):
-
-        move_group = self.move_group
-
-        move_group.execute(plan, wait=True)
 
     def wait_for_state_update(
         self, box_is_known=False, box_is_attached=False, timeout=4
@@ -191,124 +190,75 @@ class control(object):
         return False
         ## END_SUB_TUTORIAL
 
-    def add_box(self, timeout=4):
 
-        box_name = self.box_name
-        scene = self.scene
+    def grasp(self):
+        # Creates the SimpleActionClient, passing the type of the action
+        # (GraspAction) to the constructor.
+        client = actionlib.SimpleActionClient('/franka_gripper/grasp', franka_gripper.msg.GraspAction)
 
-        box_pose = geometry_msgs.msg.PoseStamped()
-        box_pose.header.frame_id = "panda_hand"
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.z = 0.11  # above the panda_hand frame
-        box_name = "box"
-        scene.add_box(box_name, box_pose, size=(0.075, 0.075, 0.075))
+        # Waits until the action server has started up and started
+        # listening for goals.
+        client.wait_for_server()
 
+        # Creates a goal to send to the action server.
+        goal = franka_gripper.msg.GraspGoal()
 
-        self.box_name = box_name
-        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
-
-    def attach_box(self, timeout=4):
-
-        box_name = self.box_name
-        robot = self.robot
-        scene = self.scene
-        eef_link = self.eef_link
-        group_names = self.group_names
-
-
-        grasping_group = "panda_hand"
-        touch_links = robot.get_link_names(group=grasping_group)
-        scene.attach_box(eef_link, box_name, touch_links=touch_links)
-
-        return self.wait_for_state_update(
-            box_is_attached=True, box_is_known=False, timeout=timeout
-        )
-
-    def detach_box(self, timeout=4):
-
-        box_name = self.box_name
-        scene = self.scene
-        eef_link = self.eef_link
-
-        scene.remove_attached_object(eef_link, name=box_name)
-        
-        return self.wait_for_state_update(
-            box_is_known=True, box_is_attached=False, timeout=timeout
-        )
-
-    def remove_box(self, timeout=4):
-        box_name = self.box_name
-        scene = self.scene
-
-        scene.remove_world_object(box_name)
-
-        return self.wait_for_state_update(
-            box_is_attached=False, box_is_known=False, timeout=timeout
-        )
-
-import franka_gripper.msg
-import actionlib
-
-def grasp_client(open=True):
-    # Creates the SimpleActionClient, passing the type of the action
-    # (GraspAction) to the constructor.
-    client = actionlib.SimpleActionClient('/franka_gripper/grasp', franka_gripper.msg.GraspAction)
-
-    # Waits until the action server has started up and started
-    # listening for goals.
-    client.wait_for_server()
-
-    # Creates a goal to send to the action server.
-    goal = franka_gripper.msg.GraspGoal()
-
-    if open:
-        goal.width=0.08
-        goal.speed = 0.1
-
-    else :
         goal.width = 0.03
         goal.epsilon.inner = 0.005
         goal.epsilon.outer = 0.005
         goal.speed = 0.1
-        goal.force = 10
+        goal.force = 5
 
-    # Sends the goal to the action server.
-    client.send_goal(goal)
+        # Sends the goal to the action server.
+        client.send_goal(goal)
 
-    # Waits for the server to finish performing the action.
-    client.wait_for_result()
+        # Waits for the server to finish performing the action.
+        client.wait_for_result()
 
-    # Prints out the result of executing the action
-    return client.get_result()  # A GraspResult
+        # Prints out the result of executing the action
+        return client.get_result()  # A GraspResult
+
+    def release(self):
+        # Creates the SimpleActionClient, passing the type of the action
+        # (GraspAction) to the constructor.
+        client = actionlib.SimpleActionClient('/franka_gripper/grasp', franka_gripper.msg.GraspAction)
+
+        # Waits until the action server has started up and started
+        # listening for goals.
+        client.wait_for_server()
+
+        # Creates a goal to send to the action server.
+        goal = franka_gripper.msg.GraspGoal()
+
+        goal.width=0.08
+        goal.speed = 0.1
+
+        # Sends the goal to the action server.
+        client.send_goal(goal)
+
+        # Waits for the server to finish performing the action.
+        client.wait_for_result()
+
+        # Prints out the result of executing the action
+        return client.get_result()  # A GraspResult
+
+
 
 def main():
     try:
-        tutorial = control()
+        test= control()
 
-        # input(
-        #     "============ Press `Enter` to execute a movement using a joint state goal ..."
-        # )
-        # tutorial.go_to_joint_state()
-        # time.sleep(1)
+        test.go_to_start()
+
 
         print("============a movement using a pose goal ...")
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.x = 1
-        pose_goal.position.x = 0.45
-        pose_goal.position.y = 0
-        pose_goal.position.z = 0.4
+        pose_goal = test.cal_target_pose(pos=[0.4,0,0.45], rot=[0,1,0,0])
 
-        tutorial.go_to_pose_goal(pose_goal)
+
+        test.plan_and_execute_cartesian_path(pose_goal)
 
 
 
-        pose_goal.position.x = 0.4
-        pose_goal.position.z = 0.59
-
-        print("============ Press `Enter` to execute a saved path ...")
-        tutorial.plan_and_execute_cartesian_path(pose_goal)
-
-        print("============ Python tutorial demo complete!")        
 
     except rospy.ROSInterruptException:
         return
