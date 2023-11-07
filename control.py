@@ -101,7 +101,7 @@ class control(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
-        self.add_box()
+        # self.add_box()
 
     
     def go_to_start(self):
@@ -140,17 +140,17 @@ class control(object):
         current_pose = self.move_group.get_current_pose().pose
         return all_close(pose_goal, current_pose, 0.01)
     
-    def cal_target_pose(self, pos =[0.307,0,0.59], rot = [0.,1.,0.,0.]):
+    def cal_target_pose(self, pos =[0.307,0,0.59], rot = [1.,0.,0.,0.]):
         target_pose = geometry_msgs.msg.Pose()
 
         target_pose.position.x=float(pos[0])
         target_pose.position.y=float(pos[1])
         target_pose.position.z=float(pos[2])
 
-        target_pose.orientation.w = float(rot[0])
-        target_pose.orientation.x = float(rot[1])
-        target_pose.orientation.y = float(rot[2])
-        target_pose.orientation.z = float(rot[3])
+        target_pose.orientation.x = float(rot[0])
+        target_pose.orientation.y = float(rot[1])
+        target_pose.orientation.z = float(rot[2])
+        target_pose.orientation.w = float(rot[3])
 
         return target_pose
 
