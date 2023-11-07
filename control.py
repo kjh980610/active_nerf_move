@@ -101,7 +101,7 @@ class control(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
-        # self.add_box()
+        self.add_box()
 
     
     def go_to_start(self):
@@ -251,12 +251,12 @@ class control(object):
         box_name = self.box_name
         scene = self.scene
 
-        box_pose = geometry_msgs.msg.PoseStamped()
-        box_pose.header.frame_id = "panda_link0"
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.z = -0.01  
-        box_name = "box1"
-        scene.add_box(box_name, box_pose, size=(3.00, 3.00, 0.01))
+        # box_pose = geometry_msgs.msg.PoseStamped()
+        # box_pose.header.frame_id = "panda_link0"
+        # box_pose.pose.orientation.w = 1.0
+        # box_pose.pose.position.z = -0.01  
+        # box_name = "box1"
+        # scene.add_box(box_name, box_pose, size=(3.00, 3.00, 0.01))
 
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = "panda_link0"
