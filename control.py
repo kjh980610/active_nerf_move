@@ -101,6 +101,8 @@ class control(object):
         self.eef_link = eef_link
         self.group_names = group_names
 
+        self.add_box()
+
     
     def go_to_start(self):
 
@@ -244,6 +246,28 @@ class control(object):
 
         # Prints out the result of executing the action
         return client.get_result()  # A GraspResult
+    
+    def add_box(self, timeout=4):
+        box_name = self.box_name
+        scene = self.scene
+
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = "panda_link0"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.z = -0.01  
+        box_name = "box1"
+        scene.add_box(box_name, box_pose, size=(3.00, 3.00, 0.01))
+
+        box_pose = geometry_msgs.msg.PoseStamped()
+        box_pose.header.frame_id = "panda_link0"
+        box_pose.pose.orientation.w = 1.0
+        box_pose.pose.position.x = 0.64 
+        box_name = "box2"
+        scene.add_box(box_name, box_pose, size=(0.01, 3.00, 3.00))
+
+
+        self.box_name = box_name
+        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
 
 
